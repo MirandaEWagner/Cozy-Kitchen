@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An illustrated kitchen game about learning a new friend's tastes.">
+<title>Miso’s Moonlit Kitchen</title>
+<link rel="stylesheet" href="kitchen.css">
+<script src="kitchen.js" defer></script>
+</head>
+<body>
+<main>
+<header><div><span class="eyebrow">☾ &nbsp; THE MOONLIT KITCHEN</span><h1>A supper for Miso</h1><p>Meet your dinner guest. Find out what makes their ears perk up.</p></div><button id="reset" class="quiet">↺ &nbsp; Start over</button></header>
+<section class="scene" aria-label="Miso waiting at the kitchen table">
+  <div class="guest" data-mood="waiting">
+    <div id="meter" hidden><label for="satisfaction">Miso’s satisfaction <output id="score">0%</output></label><progress id="satisfaction" max="100" value="0"></progress></div>
+    <div class="speech" role="status"><strong>MISO</strong><p id="hint">“Could you make me something warm?”</p></div>
+  </div>
+  <button class="door fridge" data-shelf="fridge">❄ &nbsp; Fridge</button>
+  <button class="door pantry" data-shelf="pantry">✦ &nbsp; Pantry</button>
+</section>
+<div class="workbench">
+  <section class="stock" aria-labelledby="stock-title">
+    <div class="stock-head"><h2 id="stock-title">Ingredients</h2><div class="tabs" aria-label="Ingredient storage"><button data-shelf="fridge" aria-pressed="true">Fridge</button><button data-shelf="pantry" aria-pressed="false">Pantry</button></div></div>
+    <div id="ingredients" class="ingredients"></div>
+  </section>
+  <section class="prep" aria-labelledby="prep-title">
+    <div class="stock-head"><h2 id="prep-title">Your dish</h2><button class="quiet" id="clear">Clear</button></div>
+    <div id="selection" class="selection" aria-live="polite"></div>
+    <fieldset><legend>Cook with</legend><div class="methods">
+    <label><input type="radio" name="method" value="stove" checked><span>♨ &nbsp; Stovetop</span></label>
+    <label><input type="radio" name="method" value="oven"><span>▤ &nbsp; Oven</span></label>
+    </div></fieldset>
+    <button id="serve" class="serve" disabled>Cook &amp; serve <span aria-hidden="true">→</span></button>
+  </section>
+</div>
+</main>
+</body>
+</html>
