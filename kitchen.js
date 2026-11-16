@@ -53,6 +53,50 @@ const progress = byId('satisfaction');
 const hint = byId('hint');
 const shelfButtons = document.querySelectorAll('[data-shelf]');
 
+const journalKey = 'moonlit-kitchen-journal-v1';
+const reactionColors = { Green: '#a8d88a', Amber: '#edbf75', Red: '#ed8377' };
+let attempts = [];
+try {
+  const saved = JSON.parse(localStorage.getItem(journalKey));
+  if (Array.isArray(saved)) attempts = saved;
+} catch {
+  // The journal still works during this visit if storage is unavailable.
+}
+
+function recipeName(choice, method, score) {
+  const has = id => choice.includes(id);
+  const vegetables = ['carrot', 'broccoli', 'onion', 'tomato', 'mushrooms'];
+  if (score === 100) return 'Mushroom Risotto';
+  if (has('rice') && has('spices') && vegetables.some(has)) return 'Curry';
+  if (has('tomato') && has('flour')) return 'Spaghetti';
+  if (has('sugar') && has('flour')) return method === 'oven' ? 'Sugar Cookies' : 'Sweet Griddle Cakes';
+  if (has('rice') && has('mushrooms')) return method === 'oven' ? 'Mushroom Rice Bake' : 'Mushroom Rice Skillet';
+  if (has('beans') && has('rice')) return 'Beans and Rice';
+  if (has('tomato') && has('bread')) return 'Tomato Toast';
+  if (has('milk') && has('rice')) return 'Rice Pudding';
+  const names = choice.map(id => items.get(id)[1]);
+  return names.join(' & ') + (method === 'oven' ? ' Bake' : ' Skillet');
+}
+
+function renderJournal() {
+  byId('journal-empty').hidden = attempts.length > 0;
+  const solved = attempts.some(entry => entry.score === 100);
+  byId('glow-hint').hidden = solved || attempts.length < 5;
+  byId('journal-list').replaceChildren(...attempts.map(entry => {
+    const row = document.createElement('li');
+    const name = document.createElement('strong');
+    const detail = document.createElement('small');
+    const reaction = document.createElement('span');
+    name.textContent = entry.name;
+    detail.textContent = entry.ingredients.join(', ') + ' · ' + entry.method;
+    reaction.className = 'journal-reaction';
+    reaction.style.color = reactionColors[entry.color];
+    reaction.textContent = '● ' + entry.color + ' · ' + entry.score + '%';
+    row.append(name, reaction, detail);
+    return row;
+  }));
+}
+
 function renderShelf() {
   for (const button of shelfButtons) {
     button.setAttribute('aria-pressed', String(button.dataset.shelf === shelf));
@@ -105,8 +149,23 @@ document.querySelectorAll('[name="method"]').forEach(input => input.addEventList
 byId('serve').addEventListener('click', () => {
   const method = document.querySelector('[name="method"]:checked').value;
   const result = evaluate(selected, method);
+  const color = result.score === 100 ? 'Green' : result.score >= 45 ? 'Amber' : 'Red';
+  const choice = [...selected].sort();
+  attempts.unshift({
+    name: recipeName(choice, method, result.score),
+    ingredients: choice.map(id => items.get(id)[1]),
+    method: method === 'stove' ? 'Stovetop' : 'Oven',
+    score: result.score,
+    color
+  });
+  try {
+    localStorage.setItem(journalKey, JSON.stringify(attempts));
+  } catch {
+    // Keep the current journal in memory.
+  }
+  renderJournal();
   progress.value = result.score;
-  progress.style.setProperty('--fill', result.score === 100 ? '#a8d88a' : result.score >= 45 ? '#edbf75' : '#ed8377');
+  progress.style.setProperty('--fill', reactionColors[color]);
   byId('score').value = result.score + '%';
   meter.hidden = false;
   hint.textContent = '“' + result.hint + '”';
@@ -126,3 +185,4 @@ byId('reset').addEventListener('click', () => {
 });
 renderShelf();
 updateDish();
+renderJournal();
